@@ -1,6 +1,7 @@
 //Example of the usage myScaSRS Function in stand-alone spark App with Spark API
 //- Ramdomly 5% sampling from 125K lines from Shakespear's works
 //- Two stratas for with and without the word "this"
+//- May need to configure the spark path for your use
 //@ Xiaolin Lin, May 25th, 2014
 
 import org.apache.spark.SparkContext
