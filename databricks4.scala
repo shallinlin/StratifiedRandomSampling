@@ -47,7 +47,6 @@ trait RandomSampler[T, U] extends Pseudorandom with Cloneable with Serializable 
 trait StratifiedSampler[T, U] {
 	def myAppendIndicator(dataStrata: Iterator[T]): (Iterator[(U,Int)])
 	def myScaSRS(dataStrata: Iterator[T], sampleSize: Long) : Iterator[U]
-	val mapStrataInfo: Map[Int,Long]
 }
 
 
@@ -61,7 +60,6 @@ trait StratifiedSampler[T, U] {
  * @param minSampleNumber, Int, minimize sample size fo each strata, 1 for common case
  * @tparam T item type
  */
-
 @DeveloperApi
 class RandomStratifiedSampler[T](sampleRatio: Double, minSampleNumber: Int)
     (implicit random: Random = new XORShiftRandom)
@@ -73,11 +71,14 @@ class RandomStratifiedSampler[T](sampleRatio: Double, minSampleNumber: Int)
   override def setSeed(seed: Long) = random.setSeed(seed)
 
 //Function to append strata ID after each item, can be override for specific label assigning
-  override def myAppendIndicator(dataStrata: Iterator[T]): (Iterator[(T,Int)]) {
- 	dataStrata.mapPartitionsWithIndex{ (indx, iter) =>
-  	  iter.map(x => (x, if (x.contains("this")) 1 else 0))
-    }
-  }
+//here we leave an example, the function should be override when create a Sampler
+// in order to specify different strata
+//
+//  override def myAppendIndicator(dataStrata: Iterator[T]): (Iterator[(T,Int)]) {
+// 	dataStrata.mapPartitionsWithIndex{ (indx, iter) =>
+//  	  iter.map(x => (x, if (x.contains("this")) 1 else 0))
+//    }
+//  }
   
 //define function myScaSRS, here we input sample size for example
   override def myScaSRS(dataStrata: Iterator[T], sampleSize: Long) : Iterator[T] = {
@@ -110,11 +111,13 @@ class RandomStratifiedSampler[T](sampleRatio: Double, minSampleNumber: Int)
     val rejectedStrata = assignStrata.filter(line => line._2 >= q1)
 	
     //item with value in between is put into process RDD
-    val waitingStrata = assignStrata.filter(line => (line._2 < q1 && line._2 >= q2)) //**
+    val waitingStrata = assignStrata.filter(line => (line._2 < q1 && line._2 >= q2)) 
 	
     //simple random sampling (update sample number needed) for process RDD, put into SRS RDD
-    val waitingCount = scala.math.ceil(scala.math.max(0, sampleSize - acceptedStrata.count())).toInt
-    val processStrata = sc.parallelize(waitingStrata.map(item => item.swap).sortByKey().take(waitingCount)).map(item => item._2)
+    val waitingCount = scala.math.ceil(scala.math.max(0,
+    	sampleSize - acceptedStrata.count())).toInt
+    val processStrata = sc.parallelize(waitingStrata.map(item => item.swap).
+    	sortByKey().take(waitingCount)).map(item => item._2)
 		
     //union accepted RDD with SRS RDD, put into sampled RDD 1.
     acceptedStrata.union(processStrata)
@@ -146,7 +149,8 @@ class RandomStratifiedSampler[T](sampleRatio: Double, minSampleNumber: Int)
 	  val currentSampleSize = scala.math.max(scala.math.min(minSampleNumber,currentStrataSize)
 	    ,scala.math.round(sampleRatio * currentStrataSize))
 		
-//	  println("Sample Strata #" + idStrata.toString + " count " + currentStrataSize + " sample " + currentSampleSize)
+	  println("Sample Strata #" + idStrata.toString + " count " + currentStrataSize +
+		 " sample " + currentSampleSize)
 
 	  //ScaSRS for current Strata
 	  val currentSampledStrata = myScaSRS(currentStrata,currentSampleSize)
