@@ -74,7 +74,7 @@ class RandomStratifiedSampler[T](sampleRatio: Double, minSampleNumber: Int)
 //here we leave an example, the function should be override when create a Sampler
 // in order to specify different strata
 //
-//  override def myAppendIndicator(dataStrata: Iterator[T]): (Iterator[(T,Int)]) {
+//  override def myAppendIndicator(dataStrata: Iterator[T]): (Iterator[(T,Int)]) = {
 // 	dataStrata.mapPartitionsWithIndex{ (indx, iter) =>
 //  	  iter.map(x => (x, if (x.contains("this")) 1 else 0))
 //    }
