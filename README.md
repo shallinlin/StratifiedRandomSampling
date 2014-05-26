@@ -24,5 +24,7 @@ Here the file "databrick1.scala" is a working code on Spark-shell. It demonstrat
 The code was modified briefly modified for standalone scala app. "databrick2.scala" is added.
 
 ## Trait for ScaSRS with Spark API
+The code was further modified with extended trait. 
+The "RandomStratifiedSampler" extends from "RandomSampler" and with trait "StratifiedSampler" for methods including appending trata IDs, ScaSRS for each strata and overrided function of "sample" to sample Strata-by-Strata and combine with Union.
 
 
